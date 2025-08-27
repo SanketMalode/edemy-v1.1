@@ -1,0 +1,50 @@
+import mongoose from "mongoose";
+
+const lectureSchema = new mongoose.Schema(
+  {
+    lectureId: { type: String, required: true },
+    lectureTitle: { type: String, required: true },
+    lectureDuration: { type: Number, required: true }, // Duration in minutes
+    lectureUrl: { type: String, required: true }, // Video URL (e.g., Cloudinary, Vimeo)
+    isPreviewFree: { type: Boolean, required: true }, // Allows non-enrolled users to preview
+    lectureOrder: { type: Number, required: true }, // Order within chapter
+  },
+  { _id: false }
+);
+const chapterSchema = new mongoose.Schema(
+  {
+    chapterId: { type: String, required: true },
+    chapterOrder: { type: Number, required: true },
+    chapterTitle: { type: String, required: true },
+    chapterContent: [lectureSchema], // Assumes lectureSchema is defined
+  },
+  { _id: false }
+);
+
+const courseSchema = new mongoose.Schema(
+  {
+    courseTitle: { type: String, required: true },
+    courseDescription: { type: String, required: true },
+    courseThumbnail: { type: String },
+    coursePrice: { type: Number, required: true },
+    discount: { type: Number, required: true, min: 0, max: 100 },
+    isPublished: { type: Boolean, default: true },
+    courseContent: [chapterSchema],
+    courseRatings: [
+      {
+        userId: { type: String, required: true },
+        rating: { type: Number, min: 1, max: 5, required: true },
+      },
+    ],
+    educator: { type: String, ref: "User", required: true },
+    enrolledStudents: [{ type: String, ref: "User" }],
+  },
+  {
+    timestamps: true,
+    minimize: false,
+  }
+);
+
+const Course = mongoose.model("Course", courseSchema);
+
+export default Course;
