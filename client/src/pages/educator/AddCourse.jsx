@@ -1,11 +1,14 @@
-import React, { useRef, useState, useEffect } from "react";
-import uniqid from "uniqid";
+import React, { useRef, useState, useEffect, useContext } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import Quill from "quill";
 import { assets } from "../../assets/assets";
-
+import {AppContext} from '../../context/AppContext'
+import { toast } from "react-toastify";
+import axios from "axios";
 const AddCourse = () => {
   const quillRef = useRef(null);
   const editorRef = useRef(null);
+  const {backend_url, getToken}=useContext(AppContext)
 
   const [courseTitle, setCourseTitle] = useState("");
   const [coursePrice, setCoursePrice] = useState(0);
@@ -28,7 +31,7 @@ const AddCourse = () => {
       const title = prompt("Enter Chapter Name:");
       if (title) {
         const newChapter = {
-          chapterId: uniqid(),
+          chapterId: uuidv4(),
           chapterTitle: title,
           chapterContent: [],
           collapsed: false,
@@ -61,7 +64,7 @@ const AddCourse = () => {
               chapter.chapterContent.length > 0
                 ? chapter.chapterContent.slice(-1)[0].lectureOrder + 1
                 : 1,
-            lectureId: uniqid(),
+            lectureId: uuidv4(),
           };
           chapter.chapterContent.push(newLecture);
         }
@@ -94,8 +97,54 @@ const AddCourse = () => {
   };
 
   const handleSubmit = async (e) => {
+  try {
     e.preventDefault();
-  };
+
+    if (!image) {
+      toast.error('Thumbnail Not Selected');
+      return;
+    }
+
+    const courseData = {
+      courseTitle,
+      courseDescription: quillRef.current.root.innerHTML,
+      coursePrice: Number(coursePrice),
+      discount: Number(discount),
+      courseContent: chapters,
+    };
+
+    const formData = new FormData();
+    formData.append('courseData', JSON.stringify(courseData));
+    formData.append('image', image);
+
+    const token = await getToken();
+
+    const { data } = await axios.post(
+      backend_url + '/api/educator/add-course',
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (data.success) {
+      toast.success(data.message);
+      setCourseTitle('');
+      setCoursePrice(0);
+      setDiscount(0);
+      setImage(null);
+      setChapters([]);
+      quillRef.current.root.innerHTML = '';
+    } else {
+      toast.error(data.message);
+    }
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
 
   // Initiate Quill only once
   useEffect(() => {

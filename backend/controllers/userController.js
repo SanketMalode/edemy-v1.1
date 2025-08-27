@@ -2,6 +2,7 @@ import Course from "../models/course.js";
 import User from "../models/user.js";
 import Purchase from "../models/purchase.js";
 import Stripe from "stripe";
+import { CourseProgress } from "../models/courseProgress.js";
 
 // Get Authenticated User's Basic Data
 export const getUserData = async (req, res) => {

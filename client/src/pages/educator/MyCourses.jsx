@@ -1,17 +1,34 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
+import axios from 'axios';
 
 const MyCourses = () => {
-  const { currency, allCourses } = useContext(AppContext);
+  const { currency, backend_url,isEducator, getToken } = useContext(AppContext);
   const [courses, setCourses] = useState(null);
 
+
+
   const fetchEducatorCourses = async () => {
-    setCourses(allCourses);
-  };
+  try {
+    const token = await getToken()
+    const { data } = await axios.get(backend_url + '/api/educator/courses',
+      { headers: { Authorization: `Bearer ${token}` } })
+
+    data.success && setCourses(data.courses)
+
+  } catch (error) {
+    toast.error(error.message)
+  }
+}
+
 
   useEffect(() => {
-    fetchEducatorCourses();
-  }, []);
+    if(isEducator)
+    {
+
+      fetchEducatorCourses();
+    }
+  }, [isEducator]);
 
   if (!courses) return null;
 
@@ -43,11 +60,10 @@ const MyCourses = () => {
                   <td className="px-4 py-3">
                     {currency}
                     {Math.floor(
-                      course.enrolledStudents.length *
-                        (course.coursePrice - (course.discount * course.coursePrice) / 100)
+                      course.enrolledStudents?.length * (course.coursePrice - (course.discount * course.coursePrice) / 100)
                     )}
                   </td>
-                  <td className="px-4 py-3">{course.enrolledStudents.length}</td>
+                  <td className="px-4 py-3">{course.enrolledStudents?.length}</td>
                   <td className="px-4 py-3">
                     {new Date(course.createdAt).toLocaleDateString()}
                   </td>

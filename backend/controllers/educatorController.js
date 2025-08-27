@@ -1,6 +1,9 @@
 import { clerkClient } from "@clerk/express";
-import Course from "../models/course.js"; // Adjust path as needed
+import Course from "../models/course.js"; 
 import { v2 as cloudinary } from "cloudinary";
+import Purchase from "../models/purchase.js";
+import User from '../models/user.js'
+
 
 //update role to educator
 export const updateRoleToEducator = async (req, res) => {
@@ -83,6 +86,11 @@ export const getEducatorCourses = async (req, res) => {
 };
 
 
+
+
+
+
+
 export const educatorDashboardData = async (req, res) => {
   try {
     const educator = req.auth.userId;
@@ -133,6 +141,15 @@ export const educatorDashboardData = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
 // Get Enrolled Students Data with Purchase Info
 export const getEnrolledStudentsData = async (req, res) => {
   try {
