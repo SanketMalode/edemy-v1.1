@@ -1,5 +1,8 @@
 import { Webhook } from "svix";
 import User from "../models/user.js";
+import Stripe from "stripe";
+import Purchase from "../models/purchase.js";
+import Course from "../models/course.js";
 
 export const clerkWebhooks = async (req, res) => {
   try {
@@ -59,9 +62,12 @@ export const clerkWebhooks = async (req, res) => {
   }
 };
 
-import Stripe from "stripe";
-import Purchase from "../models/purchase.js";
-import Course from "../models/course.js";
+
+
+
+
+
+
 
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -70,13 +76,13 @@ export const stripeWebhooks = async (req, res) => {
   let event;
 
   try {
-    event = stripeInstance.webhooks.constructEvent(
+    event = Stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.log("Webhook error:", err.message);
+    
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -101,7 +107,7 @@ export const stripeWebhooks = async (req, res) => {
       courseData.enrolledStudents.push(userData);
       await courseData.save();
 
-      userData.enrolledStudents.push(courseData._id);
+      userData.enrolledCourses.push(courseData._id);
       await userData.save();
 
       purchaseData.status = "completed";
@@ -129,3 +135,5 @@ export const stripeWebhooks = async (req, res) => {
 
   res.status(200).send({ received: true });
 };
+
+
